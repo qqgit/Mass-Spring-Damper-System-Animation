@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>弹簧–质量–阻尼系统 · 自由振动模拟器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+
+    <!-- ========== 左侧栏 ========== -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1><span class="hl">//</span> 弹簧–质量–阻尼</h1>
+        <div class="sub">Free Damped Oscillation</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">预设场景</span></div>
+        <div class="presets" id="presets">
+          <button class="pre" data-p="under"><span class="tag" style="background:var(--ac)"></span>轻微阻尼</button>
+          <button class="pre" data-p="crit"><span class="tag" style="background:var(--am)"></span>临界阻尼</button>
+          <button class="pre" data-p="over"><span class="tag" style="background:var(--rd)"></span>过阻尼</button>
+          <button class="pre" data-p="none"><span class="tag" style="background:var(--cy)"></span>无阻尼</button>
+          <button class="pre" data-p="fast"><span class="tag" style="background:var(--in)"></span>高频</button>
+          <button class="pre" data-p="slow"><span class="tag" style="background:#94a3b8"></span>大惯性</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">参数调节</span>
+          <span id="statusBadge" class="badge bu">欠阻尼</span>
+        </div>
+        <div class="ctrls">
+          <div class="sr"><div class="sl"><span class="p">k</span> 刚度</div><input type="range" id="sK" min="0.5" max="100" step="0.1" value="20"><div class="sv" id="vK">20.0 N/m</div></div>
+          <div class="sr"><div class="sl"><span class="p">m</span> 质量</div><input type="range" id="sM" min="0.1" max="20" step="0.1" value="2"><div class="sv" id="vM">2.0 kg</div></div>
+          <div class="sr"><div class="sl"><span class="p">c</span> 阻尼</div><input type="range" id="sC" min="0" max="40" step="0.1" value="2"><div class="sv" id="vC">2.0 Ns/m</div></div>
+          <hr class="divider">
+          <div class="sr"><div class="sl"><span class="p">x₀</span> 位移</div><input type="range" id="sX0" min="-3" max="3" step="0.05" value="2"><div class="sv" id="vX0">2.00 m</div></div>
+          <div class="sr"><div class="sl"><span class="p">v₀</span> 速度</div><input type="range" id="sV0" min="-10" max="10" step="0.1" value="0"><div class="sv" id="vV0">0.0 m/s</div></div>
+        </div>
+      </div>
+
+      <!-- 质量块自定义标签 -->
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">质量块标签</span></div>
+        <div class="tag-panel">
+          <input type="text" class="tag-input" id="tagInput" placeholder="输入自定义文字…" value="m" maxlength="6">
+          <div class="style-btns">
+            <button class="style-btn active" data-style="default">默认</button>
+            <button class="style-btn" data-style="bold">粗体</button>
+            <button class="style-btn" data-style="serif">衬线</button>
+            <button class="style-btn" data-style="mono">等宽</button>
+            <button class="style-btn" data-style="emoji">Emoji</button>
+          </div>
+          <div class="tag-row">
+            <div class="btn file-btn">
+              📷 上传图片
+              <input type="file" id="imgUpload" accept="image/*">
+            </div>
+            <button class="btn" id="btnClearImg">清除图片</button>
+          </div>
+          <div class="img-preview" id="imgPreview">
+            <img id="previewImg" src="" alt="">
+            <button class="remove" id="btnRemoveImg">×</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="btns">
+          <button class="btn bp" id="btnStart">▶ 开始</button>
+          <button class="btn" id="btnPause">⏸ 暂停</button>
+          <button class="btn" id="btnReset">↺ 重置</button>
+          <button class="btn" id="btnStep">⏭ 单步</button>
+          <button class="btn full" id="btnSpeed">速度 1×</button>
+          <button class="btn full" id="btnExport">⬇ 导出数据 CSV</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">系统特性</span></div>
+        <div class="sys-info">
+          <div class="si"><div class="lb">固有频率 ωₙ</div><div class="vl" id="iWn">—<span class="u"> rad/s</span></div></div>
+          <div class="si"><div class="lb">阻尼比 ζ</div><div class="vl" id="iZeta">—</div></div>
+          <div class="si"><div class="lb">阻尼频率 ωd</div><div class="vl" id="iWd">—<span class="u"> rad/s</span></div></div>
+          <div class="si"><div class="lb">周期 T</div><div class="vl" id="iPer">—<span class="u"> s</span></div></div>
+          <div class="si"><div class="lb">衰减 σ</div><div class="vl" id="iSig">—<span class="u"> /s</span></div></div>
+          <div class="si"><div class="lb">频率 f</div><div class="vl" id="iFreq">—<span class="u"> Hz</span></div></div>
+        </div>
+      </div>
+      <div class="ht">拖拽质量块设置位移 · 切换预设快速体验 · 修改参数后重置以应用</div>
+    </aside>
+
+    <!-- ========== 右侧主区 ========== -->
+    <main class="main">
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">系统示意</span></div>
+        <canvas id="sysCanvas"></canvas>
+      </div>
+
+      <div class="data-strip">
+        <div class="dc"><div class="lb">位移 x</div><div class="vl vc" id="dPos">0.00<span class="un">m</span></div></div>
+        <div class="dc"><div class="lb">速度 v</div><div class="vl va" id="dVel">0.00<span class="un">m/s</span></div></div>
+        <div class="dc"><div class="lb">加速度 a</div><div class="vl vi" id="dAcc">0.00<span class="un">m/s²</span></div></div>
+        <div class="dc"><div class="lb">时间 t</div><div class="vl vt" id="dTim">0.00<span class="un">s</span></div></div>
+        <div class="dc"><div class="lb">能量 E</div><div class="vl vr" id="dEng">0.00<span class="un">J</span></div></div>
+      </div>
+
+      <div class="graphs">
+        <div class="panel"><div class="panel-head"><span class="panel-title">位移 x(t)</span></div><canvas id="gxt" class="gc"></canvas></div>
+        <div class="panel"><div class="panel-head"><span class="panel-title">相图 x–v</span></div><canvas id="gxv" class="gc"></canvas></div>
+      </div>
+      <div class="graphs">
+        <div class="panel"><div class="panel-head"><span class="panel-title">能量 E(t)</span></div><canvas id="get" class="gc"></canvas></div>
+        <div class="panel"><div class="panel-head"><span class="panel-title">受力分析</span></div><canvas id="forceCanvas"></canvas></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+            <span style="font-size:8px;color:var(--td);text-transform:uppercase;letter-spacing:1.5px">能量分布</span>
+            <span style="font-size:9px;color:var(--td)" id="energyText">Ek: 0 J · Ep: 0 J</span>
+          </div>
+          <div class="ebar"><div class="ek" id="barEk" style="width:50%"></div><div class="ep" id="barEp" style="width:50%"></div><div class="ed" id="barEd" style="width:0%"></div></div>
+          <div class="ebar-label"><span><span class="dot" style="background:var(--am)"></span>动能</span><span><span class="dot" style="background:var(--in)"></span>势能</span><span><span class="dot" style="background:#1e293b"></span>已耗散</span></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="mass_spring_damper_system.js"></script>
+</body>
+</html>
